@@ -1,0 +1,16 @@
+3-fold cross-validated results (pooled predictions across all folds)
+Mean accuracy: 0.7296 +/- 0.0767
+Mean macro F1: 0.5715 +/- 0.1136
+
+                         precision    recall  f1-score   support
+
+horizontal_misalignment     0.2703    0.0595    0.0976       168
+              imbalance     0.3831    0.7687    0.5113       294
+                 normal     0.6786    0.2262    0.3393       168
+ overhang_bearing_fault     0.8934    0.8651    0.8790       504
+underhang_bearing_fault     0.9701    0.9663    0.9682       504
+  vertical_misalignment     0.8387    0.7222    0.7761       252
+
+               accuracy                         0.7296      1890
+              macro avg     0.6724    0.6013    0.5953      1890
+           weighted avg     0.7527    0.7296    0.7144      1890
