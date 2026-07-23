@@ -1,6 +1,6 @@
 # Acoustic Predictive Maintenance of Industrial Motors and Bearings
 
-Spectrogram-based anomaly detection and fault classification from microphone and vibration sensor data, using the MAFAULDA (Machinery Fault Database) dataset. Built for the ITSOLERA AI internship, Project 02.
+Spectrogram-based anomaly detection and fault classification from microphone and vibration sensor data, using the MAFAULDA (Machinery Fault Database) dataset. Built for the ITSOLERA ML internship, Project 02.
 
 ## Problem
 
