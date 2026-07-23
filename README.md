@@ -71,7 +71,15 @@ For binary anomaly detection (normal vs. faulty), vibration performs marginally 
 
 Per-class, both channels perform strongly and consistently on overhang bearing fault, underhang bearing fault, and vertical misalignment (F1 0.71–0.98 on both channels). Both channels are weak on the same two classes: normal (F1 0.00 mic, 0.10 vibration) and horizontal misalignment (F1 0.31 mic, 0.00 vibration). These are also the two smallest classes in this subset, so class imbalance is a likely contributor, though the pattern that both weak classes are shared across channels (rather than channel-specific) suggests feature overlap between them may also play a role. This is discussed further in Scope and limitations below.
 
-See `results/` for the full plots and per-class precision/recall/F1: `autoencoder_roc_mic.png` / `autoencoder_roc_vibration.png` (ROC curves), `confusion_matrix_mic.png` / `confusion_matrix_vibration.png` (confusion matrices), `classification_report_mic.txt` / `classification_report_vibration.txt` (full classification reports).
+| ROC — Microphone | ROC — Vibration |
+|---|---|
+| ![Autoencoder ROC Microphone](results/autoencoder_roc_mic.png) | ![Autoencoder ROC Vibration](results/autoencoder_roc_vibration.png) |
+
+| Confusion Matrix — Microphone | Confusion Matrix — Vibration |
+|---|---|
+| ![Confusion Matrix Microphone](results/confusion_matrix_mic.png) | ![Confusion Matrix Vibration](results/confusion_matrix_vibration.png) |
+
+Full per-class precision/recall/F1 are in `results/classification_report_mic.txt` and `results/classification_report_vibration.txt`.
 
 ## Scope and limitations
 
