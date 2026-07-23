@@ -1,10 +1,9 @@
 """
 data_loader.py
-Loads MAFAULDA CSV files, extracts the microphone (8th) column,
-and builds a labeled index of all sequences.
+Loads MAFAULDA CSV files, extracts a chosen sensor channel (microphone or
+vibration), and builds a labeled index of all sequences.
 
 Expected raw data layout after unzipping the Kaggle/UFRJ archive:
-
 data/raw/
     normal/*.csv
     imbalance/*.csv
@@ -33,7 +32,8 @@ CLASS_FOLDER_MAP = {
     "overhang_bearing_fault": ["overhang/*", "overhang_*"],
 }
 
-MIC_COLUMN_INDEX = 7  # 8th column (0-indexed) is the microphone signal
+MIC_COLUMN_INDEX = 7        # 8th column (0-indexed) is the microphone signal
+VIBRATION_COLUMN_INDEX = 2  # underhang bearing, radial direction
 
 
 def build_file_index():
@@ -55,10 +55,16 @@ def build_file_index():
     return df
 
 
-def load_audio_signal(filepath, sample_rate=50000):
-    """Reads a single MAFAULDA CSV and returns the microphone channel as a 1D array."""
+def load_audio_signal(filepath, sample_rate=50000, channel="mic"):
+    """Reads a single MAFAULDA CSV and returns the requested sensor channel as a 1D array.
+
+    channel: 'mic' for microphone (default) or 'vibration' for underhang radial accelerometer.
+    """
+    column_map = {"mic": MIC_COLUMN_INDEX, "vibration": VIBRATION_COLUMN_INDEX}
+    if channel not in column_map:
+        raise ValueError(f"channel must be one of {list(column_map)}, got '{channel}'")
     df = pd.read_csv(filepath, header=None)
-    signal = df.iloc[:, MIC_COLUMN_INDEX].to_numpy(dtype=np.float32)
+    signal = df.iloc[:, column_map[channel]].to_numpy(dtype=np.float32)
     return signal, sample_rate
 
 

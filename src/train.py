@@ -15,9 +15,14 @@ defensible, reproducible result than a lucky/unlucky single split.
   (ROC curve + AUROC on normal vs all-faults, Objective 2 & 4)
 - CNN fault classifier on all 6 classes -> confusion matrix, accuracy, F1
   (Objective 3)
+
+Run with --channel mic (default) or --channel vibration to train on either
+dataset built by build_dataset.py. Results and model files are named after
+the channel so mic and vibration runs never overwrite each other.
 """
 
 import os
+import argparse
 import numpy as np
 import torch
 import torch.nn as nn
@@ -58,8 +63,9 @@ class SpecDataset(Dataset):
         return x, self.y[idx]
 
 
-def load_data():
-    data = np.load(os.path.join(PROCESSED_DIR, "spectrograms.npz"), allow_pickle=True)
+def load_data(channel="mic"):
+    path = os.path.join(PROCESSED_DIR, f"spectrograms_{channel}.npz")
+    data = np.load(path, allow_pickle=True)
     return data["X"], data["y"], data["groups"]
 
 
@@ -102,7 +108,7 @@ def score_autoencoder(model, X):
     return np.array(errors)
 
 
-def cross_validate_autoencoder(X, y, groups):
+def cross_validate_autoencoder(X, y, groups, channel="mic"):
     """
     K-fold over the NORMAL files only (that's all this model trains on).
     In each fold, the held-out normal files + every fault-class spectrogram
@@ -149,14 +155,14 @@ def cross_validate_autoencoder(X, y, groups):
     plt.plot([0, 1], [0, 1], "k--", alpha=0.4)
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
-    plt.title(f"Anomaly Detector ROC (pooled over {k}-fold CV)\nMean fold AUROC: {mean_auroc:.4f} +/- {std_auroc:.4f}")
+    plt.title(f"Anomaly Detector ROC [{channel}] (pooled over {k}-fold CV)\nMean fold AUROC: {mean_auroc:.4f} +/- {std_auroc:.4f}")
     plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(RESULTS_DIR, "autoencoder_roc.png"), dpi=150)
+    plt.savefig(os.path.join(RESULTS_DIR, f"autoencoder_roc_{channel}.png"), dpi=150)
     plt.close()
 
     final_model = train_autoencoder_once(X_normal)
-    torch.save(final_model.state_dict(), os.path.join(MODELS_DIR, "autoencoder.pt"))
+    torch.save(final_model.state_dict(), os.path.join(MODELS_DIR, f"autoencoder_{channel}.pt"))
 
     return mean_auroc, std_auroc
 
@@ -194,7 +200,7 @@ def predict_classifier(model, X):
     return np.array(preds)
 
 
-def cross_validate_classifier(X, y, groups):
+def cross_validate_classifier(X, y, groups, channel="mic"):
     le = LabelEncoder()
     y_enc = le.fit_transform(y)
     num_classes = len(le.classes_)
@@ -225,7 +231,8 @@ def cross_validate_classifier(X, y, groups):
 
     report = classification_report(all_true, all_pred, target_names=le.classes_, digits=4, zero_division=0)
     print(report)
-    with open(os.path.join(RESULTS_DIR, "classification_report.txt"), "w") as f:
+    with open(os.path.join(RESULTS_DIR, f"classification_report_{channel}.txt"), "w") as f:
+        f.write(f"Channel: {channel}\n")
         f.write(f"{k}-fold cross-validated results (pooled predictions across all folds)\n")
         f.write(f"Mean accuracy: {mean_acc:.4f} +/- {std_acc:.4f}\n")
         f.write(f"Mean macro F1: {mean_f1:.4f} +/- {std_f1:.4f}\n\n")
@@ -236,26 +243,36 @@ def cross_validate_classifier(X, y, groups):
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=le.classes_, yticklabels=le.classes_)
     plt.xlabel("Predicted")
     plt.ylabel("True")
-    plt.title(f"Fault Classifier Confusion Matrix (pooled, {k}-fold CV)\nMean accuracy: {mean_acc:.4f} +/- {std_acc:.4f}")
+    plt.title(f"Fault Classifier Confusion Matrix [{channel}] (pooled, {k}-fold CV)\nMean accuracy: {mean_acc:.4f} +/- {std_acc:.4f}")
     plt.tight_layout()
-    plt.savefig(os.path.join(RESULTS_DIR, "confusion_matrix.png"), dpi=150)
+    plt.savefig(os.path.join(RESULTS_DIR, f"confusion_matrix_{channel}.png"), dpi=150)
     plt.close()
 
     final_model = train_classifier_once(X, y_enc, num_classes)
-    torch.save(final_model.state_dict(), os.path.join(MODELS_DIR, "classifier.pt"))
+    torch.save(final_model.state_dict(), os.path.join(MODELS_DIR, f"classifier_{channel}.pt"))
 
     return mean_acc, std_acc, mean_f1, std_f1, le
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--channel",
+        choices=["mic", "vibration"],
+        default="mic",
+        help="Which sensor channel's dataset to train on (default: mic)",
+    )
+    args = parser.parse_args()
+    channel = args.channel
+
     print(f"Using device: {DEVICE}")
-    X, y, groups = load_data()
+    X, y, groups = load_data(channel=channel)
     print(f"Loaded {X.shape[0]} spectrograms across {len(set(y))} classes, {len(set(groups))} source files.")
 
-    print("\n=== Cross-validating anomaly detector (autoencoder) ===")
-    cross_validate_autoencoder(X, y, groups)
+    print(f"\n=== Cross-validating anomaly detector (autoencoder) [{channel}] ===")
+    cross_validate_autoencoder(X, y, groups, channel=channel)
 
-    print("\n=== Cross-validating fault classifier ===")
-    cross_validate_classifier(X, y, groups)
+    print(f"\n=== Cross-validating fault classifier [{channel}] ===")
+    cross_validate_classifier(X, y, groups, channel=channel)
 
-    print("\nDone. See results/ for ROC curve, confusion matrix, and classification report.")
+    print(f"\nDone. See results/ for ROC curve, confusion matrix, and classification report (channel: {channel}).")

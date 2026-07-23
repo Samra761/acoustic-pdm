@@ -1,0 +1,17 @@
+Channel: mic
+3-fold cross-validated results (pooled predictions across all folds)
+Mean accuracy: 0.7153 +/- 0.1432
+Mean macro F1: 0.5518 +/- 0.1325
+
+                         precision    recall  f1-score   support
+
+horizontal_misalignment     0.4078    0.2500    0.3100       168
+              imbalance     0.3686    0.8299    0.5105       294
+                 normal     0.0000    0.0000    0.0000       168
+ overhang_bearing_fault     0.9792    0.6548    0.7848       504
+underhang_bearing_fault     0.9669    0.9841    0.9754       504
+  vertical_misalignment     0.8759    0.9524    0.9125       252
+
+               accuracy                         0.7153      1890
+              macro avg     0.5997    0.6119    0.5822      1890
+           weighted avg     0.7293    0.7153    0.6980      1890

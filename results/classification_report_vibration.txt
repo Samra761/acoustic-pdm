@@ -1,0 +1,17 @@
+Channel: vibration
+3-fold cross-validated results (pooled predictions across all folds)
+Mean accuracy: 0.6534 +/- 0.0173
+Mean macro F1: 0.4715 +/- 0.0388
+
+                         precision    recall  f1-score   support
+
+horizontal_misalignment     0.0000    0.0000    0.0000       168
+              imbalance     0.5205    0.5170    0.5188       294
+                 normal     1.0000    0.0536    0.1017       168
+ overhang_bearing_fault     0.9871    0.9127    0.9485       504
+underhang_bearing_fault     0.6154    0.8413    0.7108       504
+  vertical_misalignment     0.4378    0.7540    0.5539       252
+
+               accuracy                         0.6534      1890
+              macro avg     0.5935    0.5131    0.4723      1890
+           weighted avg     0.6556    0.6534    0.6061      1890
